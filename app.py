@@ -318,8 +318,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.event(input.send3, ignore_none=False)
     def Pred():
         selected_row = input.patient_row
-        selected_rows = data.iloc[selected_row() - 1]
-        prediction = Joblib(selected_rows)
+        selected_row = data.iloc[selected_row() - 1]
+        prediction = Joblib(selected_row)
         
         return prediction
     
