@@ -308,8 +308,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.text
     @reactive.event(input.send3, ignore_none=False)
     def patient_Row():
-        patient_ids = input.patient_row
-        return f"Prediction for the Patient {patient_ids}"
+        patient_id = input.patient_row
+        return f"Prediction for the Patient {patient_id}"
     
 
 #Tab Joblib Prediction, Text to display Prediction made with Model and dataset
