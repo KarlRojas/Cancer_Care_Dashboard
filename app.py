@@ -304,12 +304,13 @@ def server(input: Inputs, output: Outputs, session: Session):
         return violin
 
 #Shiny for Python function to display Patient info on the Joblib prediction tab
-    @output
+    """@output
     @render.text
     @reactive.event(input.send3, ignore_none=False)
     def patient_Row():
         patient_id = input.patient_row
-        return f"Prediction for the Patient {patient_id}"
+        pred = Joblib(patient_id())
+        return f"Prediction for the Patient {pred}"""
     
 
 #Tab Joblib Prediction, Text to display Prediction made with Model and dataset
@@ -318,14 +319,12 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.event(input.send3, ignore_none=False)
     def Pred():
         selected_row = input.patient_row
-        selected_row = data.iloc[selected_row() - 1]
-        prediction = Joblib(selected_row)
-        
+        prediction = Joblib(selected_row())
         return prediction
     
     @output
     @render.plot
-    @reactive.event(input.send4, ignore_none=False)
+    @reactive.event(input.send3, ignore_none=False)
     def Pred_plot():
         selected_row = input.patient_row
         plot = pred_plot(selected_row())

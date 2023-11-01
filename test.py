@@ -237,7 +237,7 @@ def Joblib(selected_row):
 
     # Read the CSV file into a DataFrame
     data = pd.read_csv('simulated_data.csv')
-#KE
+
     # Define the number of features to select (304 in your case)
     num_features_to_select = 304
 
