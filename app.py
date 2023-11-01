@@ -372,8 +372,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.table
     @reactive.event(input.send, ignore_none=False)
     def patient_table():
-        patient_ids = input.patient_id
-        response = requests.get('{}/{}/{}'.format(BASE_URL, 'Patient', patient_ids()))
+        patient_id = input.patient_id
+        response = requests.get('{}/{}/{}'.format(BASE_URL, 'Patient', patient_id()))
 
         patient_df = pd.json_normalize(response.json())[['id', 'gender', 'birthDate']]
         patient_df = patient_df.astype({'birthDate': 'datetime64[ns]'})
