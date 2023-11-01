@@ -10,7 +10,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestRegressor
 import shap
-
+#Bonjour
 BASE_URL = 'https://test/fhir'
 
 def patient_data(patient_id) :
