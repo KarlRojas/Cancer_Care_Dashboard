@@ -245,7 +245,7 @@ def Joblib(selected_row):
     patient_data = data.iloc[selected_row - 1]  # Assuming selected_row is the row number you want to predict
 
     # Extract the 'days_from_diag' column from the patient's data
-    days_from_diag = patient_data['days_from_diag']
+    days_from_diag = patient_data['side_effect_constip']
 
     # Find the index (position) of the 'days_from_diag' column
     days_from_diag_idx = data.columns.get_loc('side_effect_constip')
