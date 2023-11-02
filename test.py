@@ -248,7 +248,7 @@ def Joblib(selected_row):
     days_from_diag = patient_data['days_from_diag']
 
     # Find the index (position) of the 'days_from_diag' column
-    days_from_diag_idx = data.columns.get_loc('days_from_diag')
+    days_from_diag_idx = data.columns.get_loc('side_effect_constip')
 
     # Extract features starting from 'days_from_diag' and select the next 304 columns
     selected_features = patient_data[days_from_diag_idx + 1:days_from_diag_idx + num_features_to_select + 1]
@@ -262,7 +262,7 @@ def Joblib(selected_row):
 
     return f"The risk of dying within 30 days for patient {selected_row} is {per:.2f}% according to my model."
 
-from io import BytesIO
+
 
 def pred_plot(selected_row):
     # Load the pre-trained model
@@ -273,6 +273,7 @@ def pred_plot(selected_row):
     # Extract the selected patient's data
     patient_data = data.iloc[selected_row - 1]
     days_from_diag = patient_data['days_from_diag'].tolist()
+
 
     # Create a bar plot to visualize the 'days_from_diag' values
     plt.figure(figsize=(8, 6))

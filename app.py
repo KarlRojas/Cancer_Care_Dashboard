@@ -2,8 +2,7 @@ from shiny import Inputs, Outputs, Session, App, ui, render, reactive
 from pathlib import Path
 from test import treatment_file, data_separation, data_split, LR, evaluate_linear_regression, train_and_evaluate_random_forest, plot_linear_regression_results, create_shap_waterfall_chart, shap_beeswarm_plot, shap_violin_plot, Split_and_Shap,create_and_display_graph_test, Joblib
 from test import plot_RF_results, RF, patient_data, pred_plot
-import shiny.experimental as x
-import json
+import shiny as x
 import requests_fhir as requests
 import pandas as pd
 from datetime import datetime
@@ -64,7 +63,8 @@ app_ui = ui.page_fluid(
                 ),
                 x.ui.card(
                     x.ui.card_header("Patient History"),
-                    ui.input_text("snowmed", "Snowmed code"),
+                    ui.input_text("snowmed", "Snowmed code", value='chol'),
+                    ui.input_numeric("patient2", "Enter the Patient ID", 2, min=1, max=1000000000),
                     ui.p(ui.input_action_button("send2", "Enter", class_="btn-primary")),
                     ui.output_table("history"),
                 ),
@@ -386,8 +386,9 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.event(input.send2, ignore_none=False)
     def history() :
         patient_id=input.patient_id
+        patient2 =input.patient2
         code = input.snowmed
-        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), code()))
+        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), patient2(), code()))
         history_df = pd.json_normalize(response.json())
         return history_df
 
