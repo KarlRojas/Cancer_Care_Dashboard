@@ -34,7 +34,7 @@ import plotly.express as px
 import streamlit as st
 import tempfile
 import os
-import joblib 
+import joblib
 BASE_URL = 'https://test/fhir'
 
 #Opening the Treatment CSV file
@@ -45,6 +45,9 @@ treat = pd.read_csv(infile)
 model = joblib.load('model.joblib')
 data = pd.read_csv('simulated_data.csv')
 
+#Opening the Snomed CSV file
+infiles = Path(__file__).parent / "data/snomed.csv"
+snomed = pd.read_csv(infiles)
 
 app_ui = ui.page_fluid(
     ui.panel_title("AI Dashboard for Cancer Care"), 
@@ -52,7 +55,7 @@ app_ui = ui.page_fluid(
     output_widget("my_widget"),
     ui.panel_main(
         shinyswatch.theme.darkly(),
-        ui.navset_tab(
+        x.ui.navset_pill_list(
              ui.nav(
                 "Patient Informations",
                 x.ui.card(
@@ -274,7 +277,7 @@ def server(input: Inputs, output: Outputs, session: Session):
          lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
          positive_feature_names, negative_feature_names = Split_and_Shap(lr, x, X_test, sample_index=14, max_display=14)
         # Return the two lists as a tuple
-         return f"Positive features : {positive_feature_names}\n Negative features :{negative_feature_names}"
+         return f" The positive features are : {positive_feature_names}\n & the negative features are :{negative_feature_names}"
     
 #Function for nav"Other Types of SHAP charts" to display two other SHAP chart "Beeswarm" and "Violin"
     @output
@@ -391,5 +394,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), patient2(), code()))
         history_df = pd.json_normalize(response.json())
         return history_df
+    
+
+
 
 app = App(app_ui, server)
