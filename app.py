@@ -1,11 +1,8 @@
 from shiny import Inputs, Outputs, Session, App, ui, render, reactive
 from pathlib import Path
-from test import treatment_file, data_separation, data_split, LR, evaluate_linear_regression, \
-    train_and_evaluate_random_forest, plot_linear_regression_results, create_shap_waterfall_chart, shap_beeswarm_plot, \
-    shap_violin_plot, Split_and_Shap, create_and_display_graph_test, Joblib
+from test import treatment_file, data_separation, data_split, LR, evaluate_linear_regression, train_and_evaluate_random_forest, plot_linear_regression_results, create_shap_waterfall_chart, shap_beeswarm_plot, shap_violin_plot, Split_and_Shap,create_and_display_graph_test, Joblib
 from test import plot_RF_results, RF, patient_data, pred_plot
-import shiny.experimental as x
-import json
+import shiny as x
 import requests_fhir as requests
 import pandas as pd
 from datetime import datetime
@@ -38,25 +35,28 @@ import streamlit as st
 import tempfile
 import os
 import joblib
-
 BASE_URL = 'https://test/fhir'
 
-# Opening the Treatment CSV file
+#Opening the Treatment CSV file
 infile = Path(__file__).parent / "data/treat_data.csv"
 treat = pd.read_csv(infile)
 
-# Loading the pre-trained model and Opening the Simulated Data
+#Loading the pre-trained model and Opening the Simulated Data
 model = joblib.load('model.joblib')
 data = pd.read_csv('simulated_data.csv')
 
+#Opening the Snomed CSV file
+infiles = Path(__file__).parent / "data/snomed.csv"
+snomed = pd.read_csv(infiles)
+
 app_ui = ui.page_fluid(
-    ui.panel_title("AI Dashboard for Cancer Care"),
+    ui.panel_title("AI Dashboard for Cancer Care"), 
     {"style": "text-align : center;" "font-weight : bold;"},
     output_widget("my_widget"),
     ui.panel_main(
         shinyswatch.theme.darkly(),
-        ui.navset_tab(
-            ui.nav(
+        x.ui.navset_pill_list(
+             ui.nav(
                 "Patient Informations",
                 x.ui.card(
                     x.ui.card_header("Patient Info"),
@@ -66,7 +66,8 @@ app_ui = ui.page_fluid(
                 ),
                 x.ui.card(
                     x.ui.card_header("Patient History"),
-                    ui.input_text("snowmed", "Snowmed code"),
+                    ui.input_text("snowmed", "Snowmed code", value='chol'),
+                    ui.input_numeric("patient2", "Enter the Patient ID", 2, min=1, max=1000000000),
                     ui.p(ui.input_action_button("send2", "Enter", class_="btn-primary")),
                     ui.output_table("history"),
                 ),
@@ -114,7 +115,7 @@ app_ui = ui.page_fluid(
             ),
             ui.nav(
                 "What if analysis",
-                x.ui.card(
+                    x.ui.card(
                     x.ui.card_header("What if"),
                     ui.p(ui.input_action_button("pred", "Create a new Prediction!", class_="btn-primary")),
                     ui.input_slider(
@@ -131,7 +132,7 @@ app_ui = ui.page_fluid(
                         150,
                         100,
                         step=0.01,
-                        animate=True
+                        animate = True
                     ),
                     ui.input_selectize(
                         "gender",
@@ -162,7 +163,7 @@ app_ui = ui.page_fluid(
                     ui.output_plot("new_LR_plt"),
                 ),
             ),
-
+            
             ui.nav(
                 "Joblib Prediction",
                 x.ui.card(
@@ -181,10 +182,10 @@ app_ui = ui.page_fluid(
 
                 )
             ),
-
+           
             ui.nav(
                 "Treatment Plans",
-
+                
             ),
             ui.nav(
                 "Feedback and Support"
@@ -193,19 +194,19 @@ app_ui = ui.page_fluid(
     ),
 )
 
-
-# Server part of the Shiny for Python code :
+#Server part of the Shiny for Python code :
 def server(input: Inputs, output: Outputs, session: Session):
-    # Loading the treat CSV file
+
+#Loading the treat CSV file
     @output
     @render.table
     def Treattable():
         infile = Path(__file__).parent / "data/treat_data.csv"
         treat = pd.read_csv(infile)
         return treat
-
-    # Trying to display the Linear Regression Graphs and Waterfall chart on the Dashboard by creating
-    # PNG images and using them to display them on the dashboard
+    
+#Trying to display the Linear Regression Graphs and Waterfall chart on the Dashboard by creating
+#PNG images and using them to display them on the dashboard
     @output
     @render.plot
     def Data_test():
@@ -213,12 +214,14 @@ def server(input: Inputs, output: Outputs, session: Session):
         x = pd.DataFrame(x)
         x = x.fillna(0)
         x = x.dropna()
-        X_train, X_test, Y_train, Y_test = data_split(x, y)
+        X_train, X_test, Y_train, Y_test = data_split(x,y)
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
         linear_regression_plot = plot_linear_regression_results(Y_train, y_lr_train_pred)
         return linear_regression_plot
+    
+    
 
-    # Function for WaterFall chart for Linear Regression
+#Function for WaterFall chart for Linear Regression
     @output
     @render.plot
     def WaterfallPNG():
@@ -227,11 +230,11 @@ def server(input: Inputs, output: Outputs, session: Session):
         x = pd.DataFrame(x)
         x = x.fillna(0)
         x = x.dropna()
-        X_train, X_test, Y_train, Y_test = data_split(x, y)
-
+        X_train, X_test, Y_train, Y_test = data_split(x,y)
+ 
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
         Water = create_shap_waterfall_chart(lr, x, X_test, sample_index=14, max_display=14)
-
+        
         return Water
 
     @output
@@ -241,11 +244,11 @@ def server(input: Inputs, output: Outputs, session: Session):
         x = pd.DataFrame(x)
         x = x.fillna(0)
         x = x.dropna()
-        X_train, X_test, Y_train, Y_test = data_split(x, y)
-        rf, y_rf_train_pred, y_rf_test_pred = RF(X_train, Y_train, X_test, max_depth=2, random_state=100)
+        X_train, X_test, Y_train, Y_test = data_split(x,y)
+        rf, y_rf_train_pred, y_rf_test_pred = RF(X_train,Y_train, X_test, max_depth=2, random_state=100)
         RF_plot = plot_RF_results(Y_train, y_rf_train_pred)
         return RF_plot
-
+    
     @output
     @render.plot
     def WaterRF():
@@ -253,29 +256,30 @@ def server(input: Inputs, output: Outputs, session: Session):
         x = pd.DataFrame(x)
         x = x.fillna(0)
         x = x.dropna()
-        X_train, X_test, Y_train, Y_test = data_split(x, y)
-        rf, y_rf_train_pred, y_rf_test_pred = RF(X_train, Y_train, X_test, max_depth=2, random_state=100)
+        X_train, X_test, Y_train, Y_test = data_split(x,y)
+        rf, y_rf_train_pred, y_rf_test_pred = RF(X_train,Y_train, X_test, max_depth=2, random_state=100)
         RFWater = create_shap_waterfall_chart(rf, x, X_test, sample_index=14, max_display=14)
         return RFWater
 
-    # Function for nav"Other Types of SHAP charts" to display two lists of the
-    # positive and negative features
+
+#Function for nav"Other Types of SHAP charts" to display two lists of the
+#positive and negative features
     @output
     @render.text
     def positive_negative():
-        x, y = data_separation(treat)
-        x = pd.DataFrame(x)
-        x = x.fillna(0)
-        x = x.dropna()
-        X_train, X_test, Y_train, Y_test = data_split(x, y)
+         x, y = data_separation(treat)
+         x = pd.DataFrame(x)
+         x = x.fillna(0)
+         x = x.dropna()
+         X_train, X_test, Y_train, Y_test = data_split(x,y)
         # Drop rows containing NaN values
-
-        lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
-        positive_feature_names, negative_feature_names = Split_and_Shap(lr, x, X_test, sample_index=14, max_display=14)
+ 
+         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
+         positive_feature_names, negative_feature_names = Split_and_Shap(lr, x, X_test, sample_index=14, max_display=14)
         # Return the two lists as a tuple
-        return f"Positive features : {positive_feature_names}\n Negative features :{negative_feature_names}"
-
-    # Function for nav"Other Types of SHAP charts" to display two other SHAP chart "Beeswarm" and "Violin"
+         return f" The positive features are : {positive_feature_names}\n & the negative features are :{negative_feature_names}"
+    
+#Function for nav"Other Types of SHAP charts" to display two other SHAP chart "Beeswarm" and "Violin"
     @output
     @render.plot
     def plot_bee():
@@ -288,7 +292,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         bee = shap_beeswarm_plot(lr, x, X_test, sample_index=14, max_display=14)
         return bee  # Return the SHAP graph
 
-    # Same but for Violin SHAP chart
+#Same but for Violin SHAP chart
     @output
     @render.plot
     def plot_violin():
@@ -302,7 +306,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         return violin
 
-    # Shiny for Python function to display Patient info on the Joblib prediction tab
+#Shiny for Python function to display Patient info on the Joblib prediction tab
     """@output
     @render.text
     @reactive.event(input.send3, ignore_none=False)
@@ -310,8 +314,9 @@ def server(input: Inputs, output: Outputs, session: Session):
         patient_id = input.patient_row
         pred = Joblib(patient_id())
         return f"Prediction for the Patient {pred}"""
+    
 
-    # Tab Joblib Prediction, Text to display Prediction made with Model and dataset
+#Tab Joblib Prediction, Text to display Prediction made with Model and dataset
     @output
     @render.text
     @reactive.event(input.send3, ignore_none=False)
@@ -319,7 +324,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         selected_row = input.patient_row
         prediction = Joblib(selected_row())
         return prediction
-
+    
     @output
     @render.plot
     @reactive.event(input.send3, ignore_none=False)
@@ -328,7 +333,9 @@ def server(input: Inputs, output: Outputs, session: Session):
         plot = pred_plot(selected_row())
         return plot
 
-    # Shiny for Python for the What if navigation bar and what is inside
+
+
+#Shiny for Python for the What if navigation bar and what is inside
     @output
     @render.plot
     @reactive.event(input.pred, ignore_none=False)
@@ -338,7 +345,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         gender = input.gender
         diabetes = input.diabetes
         model = LinearRegression()
-        # Setting up x and y :
+        #Setting up x and y :
         np.random.seed(19680801)
         x = age * np.random.randn(437)
         y = blood * np.random.randn(437)
@@ -347,21 +354,23 @@ def server(input: Inputs, output: Outputs, session: Session):
         plot = plot_linear_regression_results(Y_train, y_lr_train_pred)
         return plot
 
-    # Shiny for Python function for the What if tab
+
+
+#Shiny for Python function for the What if tab
     @output
     @render.plot
     def Current():
-        # Setting up x and y :
+         #Setting up x and y :
         x, y = data_separation(treat)
         x = pd.DataFrame(x)
         x = x.fillna(0)
-        x = x.dropna()
+        x= x.dropna()
         X_train, X_test, Y_train, Y_test = data_split(x, y)
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
         Cur = plot_linear_regression_results(Y_train, y_lr_train_pred)
         return Cur
 
-    # Shiny for Python function to display Patient info
+#Shiny for Python function to display Patient info   
     @output
     @render.table
     @reactive.event(input.send, ignore_none=False)
@@ -372,17 +381,21 @@ def server(input: Inputs, output: Outputs, session: Session):
         patient_df = pd.json_normalize(response.json())[['id', 'gender', 'birthDate']]
         patient_df = patient_df.astype({'birthDate': 'datetime64[ns]'})
         return patient_df
+    
 
-    # Shiny for Python function to display Patient history
+#Shiny for Python function to display Patient history   
     @output
     @render.table
     @reactive.event(input.send2, ignore_none=False)
-    def history():
-        patient_id = input.patient_id
+    def history() :
+        patient_id=input.patient_id
+        patient2 =input.patient2
         code = input.snowmed
-        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), code()))
+        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), patient2(), code()))
         history_df = pd.json_normalize(response.json())
         return history_df
+    
+
 
 
 app = App(app_ui, server)

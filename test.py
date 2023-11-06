@@ -207,6 +207,7 @@ def Split_and_Shap(model, x, X_test, sample_index, max_display=14):
 
     # Return positive and negative feature names as two separate lists
     return positive_feature_names, negative_feature_names
+
     
 #Function to display and create a Linear Regression graph and save it as an image
 def create_and_display_graph_test(Y_train, y_lr_train_pred, image_path):
@@ -245,10 +246,10 @@ def Joblib(selected_row):
     patient_data = data.iloc[selected_row - 1]  # Assuming selected_row is the row number you want to predict
 
     # Extract the 'days_from_diag' column from the patient's data
-    days_from_diag = patient_data['days_from_diag']
+    days_from_diag = patient_data['side_effect_constip']
 
     # Find the index (position) of the 'days_from_diag' column
-    days_from_diag_idx = data.columns.get_loc('days_from_diag')
+    days_from_diag_idx = data.columns.get_loc('side_effect_constip')
 
     # Extract features starting from 'days_from_diag' and select the next 304 columns
     selected_features = patient_data[days_from_diag_idx + 1:days_from_diag_idx + num_features_to_select + 1]
@@ -262,21 +263,31 @@ def Joblib(selected_row):
 
     return f"The risk of dying within 30 days for patient {selected_row} is {per:.2f}% according to my model."
 
-from io import BytesIO
+
 
 def pred_plot(selected_row):
     # Load the pre-trained model
     model = joblib.load('model.joblib')
     # Read the CSV file into a DataFrame
     data = pd.read_csv('simulated_data.csv')
+    num_features_to_select = 304
 
     # Extract the selected patient's data
     patient_data = data.iloc[selected_row - 1]
-    days_from_diag = patient_data['days_from_diag'].tolist()
+    # Extract the 'days_from_diag' column from the patient's data
+    days_from_diag = patient_data['side_effect_constip']
+
+    # Find the index (position) of the 'days_from_diag' column
+    days_from_diag_idx = data.columns.get_loc('side_effect_constip')
+
+    # Extract features starting from 'days_from_diag' and select the next 304 columns
+    selected_features = patient_data[days_from_diag_idx + 1:days_from_diag_idx + num_features_to_select + 1]
+
+
 
     # Create a bar plot to visualize the 'days_from_diag' values
     plt.figure(figsize=(8, 6))
-    plt.bar(days_from_diag, days_from_diag)
-    plt.xlabel('Feature Index')
-    plt.ylabel('Days from Diagnosis')
+    plt.hist(selected_features, bins=20)
+    plt.xlabel('Feature Value')
+    plt.ylabel('Frequency')
     plt.title(f'Days from Diagnosis for Patient {selected_row}')
