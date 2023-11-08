@@ -161,7 +161,9 @@ def shap_beeswarm_plot(model, x, X_test, sample_index, max_display=20):
     feature_names = x.columns.tolist()
     explainer = shap.Explainer(model, X_test, feature_names=feature_names)
     shap_values = explainer(X_test)
+    plt.title("Impact of the features")
     shap.plots.beeswarm(shap_values, max_display=max_display, show=False)
+
  
 
 
