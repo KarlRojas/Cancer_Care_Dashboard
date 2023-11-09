@@ -1,23 +1,15 @@
-from shiny import Inputs, Outputs, Session, App, ui, render, reactive
+from shiny import *
 from pathlib import Path
 from test import treatment_file, data_separation, data_split, LR, evaluate_linear_regression, train_and_evaluate_random_forest, plot_linear_regression_results, create_shap_waterfall_chart, shap_beeswarm_plot, shap_violin_plot, Split_and_Shap,create_and_display_graph_test, Joblib
 from test import plot_RF_results, RF, patient_data, pred_plot
 import shiny as x
+
 import requests_fhir as requests
 import pandas as pd
-from datetime import datetime
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.datasets import make_classification
-from sklearn.impute import SimpleImputer
+
+from sklearn import *
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.ensemble import RandomForestRegressor
-import shap
-import sklearn
-from shinywidgets import output_widget, register_widget, render_widget
-from io import BytesIO
+from shinywidgets import output_widget, render_widget
 import plotly.express as px
 from asyncio import sleep
 import numpy as np
@@ -35,6 +27,8 @@ import streamlit as st
 import tempfile
 import os
 import joblib
+from shiny.types import NavSetArg
+from typing import List 
 BASE_URL = 'https://test/fhir'
 
 #Opening the Treatment CSV file
@@ -49,32 +43,27 @@ data = pd.read_csv('simulated_data.csv')
 infiles = Path(__file__).parent / "data/snomed.csv"
 snomed = pd.read_csv(infiles)
 
-app_ui = ui.page_fluid(
-    ui.panel_title("AI Dashboard for Cancer Care"), 
-    {"style": "text-align : center;" "font-weight : bold;"},
-    output_widget("my_widget"),
-    ui.panel_main(
-        shinyswatch.theme.darkly(),
-        x.ui.navset_pill_list(
-             ui.nav(
-                "Patient Informations",
-                x.ui.card(
-                    x.ui.card_header("Patient Info"),
-                    ui.input_numeric("patient_id", "Enter the Patient ID", 2, min=1, max=1000000000),
-                    ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
-                    ui.output_table("patient_table"),
-                ),
-                x.ui.card(
+#new navigation bar 
+def nav_controls(prefix: str) -> List[NavSetArg]:
+    return [
+        ui.nav_spacer(),
+        ui.nav("Patient Information", prefix + ": Patient Informations",
+               x.ui.card(
+                   x.ui.card_header("Patient Information"),
+                   ui.input_numeric("patient_id", "Enter the Patient ID", 2, min=1, max=1000000000),
+                   ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
+                   ui.output_table("patient_table"),
+               ),
+               x.ui.card(
                     x.ui.card_header("Patient History"),
                     ui.input_text("snowmed", "Snowmed code", value='chol'),
                     ui.input_numeric("patient2", "Enter the Patient ID", 2, min=1, max=1000000000),
                     ui.p(ui.input_action_button("send2", "Enter", class_="btn-primary")),
                     ui.output_table("history"),
-                ),
-            ),
-            ui.nav(
-                "Linear Regression & Random Forest",
-                ui.row(
+               ),
+        ),
+        ui.nav("Linear Regression & Random Forest", prefix + ": Linear Regression & Random Forest",
+               ui.row(
                     ui.column(
                         6,
                         x.ui.card(
@@ -99,9 +88,9 @@ app_ui = ui.page_fluid(
                         ),
                     ),
                 ),
-            ),
-            ui.nav(
-                "BeeSwarm & Violin Graphs",
+               ),
+        ui.nav(
+                "BeeSwarm & Violin Graphs",prefix + ": BeeSwarm & Violin Graphs",
                 x.ui.card(
                     x.ui.card_header("Positive and negative SHAP features"),
                     ui.output_text("positive_negative"),
@@ -113,8 +102,9 @@ app_ui = ui.page_fluid(
                     ui.output_plot("plot_violin")
                 ),
             ),
-            ui.nav(
-                "What if analysis",
+
+        ui.nav(
+                "What if analysis",prefix + ": What if analysis",
                     x.ui.card(
                     x.ui.card_header("What if"),
                     ui.p(ui.input_action_button("pred", "Create a new Prediction!", class_="btn-primary")),
@@ -165,7 +155,7 @@ app_ui = ui.page_fluid(
             ),
             
             ui.nav(
-                "Joblib Prediction",
+                "Joblib Prediction", prefix + ": Joblib Prediction",
                 x.ui.card(
                     x.ui.card_header("Patient ROW"),
                     ui.input_numeric("patient_row", "Enter the Patient ROW", 1, min=1, max=len(data)),
@@ -184,18 +174,43 @@ app_ui = ui.page_fluid(
             ),
            
             ui.nav(
-                "Treatment Plans",
+                "Treatment Plans",  prefix + ": Treatment Plans",
+                ui.div(
+                    ui.input_select(
+                        "x", label="Variable",
+                        choices=["total_bill", "tip", "size"]
+                    ),
+                    ui.input_select(
+                        "color", label="Color",
+                        choices=["smoker", "sex", "day", "time"]
+                    ),
+                    class_="d-flex gap-3",
+
+                ),
+                output_widget("my_widget"),
                 
             ),
             ui.nav(
-                "Feedback and Support"
+                "Feedback and Support", prefix + ": Feedback and Support",
             )
-        )
-    ),
+    ]
+
+
+app_ui = ui.page_navbar(
+    *nav_controls("Page"),
+    shinyswatch.theme.darkly(),
+    title="AI Dashboard for Cancer Care",
+    id="navbar_id",
 )
 
 #Server part of the Shiny for Python code :
 def server(input: Inputs, output: Outputs, session: Session):
+
+    @reactive.Effect
+    def _():
+        print("Current navbar page: ", input.navbar_id())
+
+
 
 #Loading the treat CSV file
     @output
