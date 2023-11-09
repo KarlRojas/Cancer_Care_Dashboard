@@ -1,3 +1,4 @@
 simulated_data.csv
 *.csv
+/.idea/
 __pycache__
