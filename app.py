@@ -1,35 +1,8 @@
 from shiny import *
-from pathlib import Path
-from test import treatment_file, data_separation, data_split, LR, evaluate_linear_regression, train_and_evaluate_random_forest, plot_linear_regression_results, create_shap_waterfall_chart, shap_beeswarm_plot, shap_violin_plot, Split_and_Shap,create_and_display_graph_test, Joblib
-from test import plot_RF_results, RF, patient_data, pred_plot
+from Functions import *
 import shiny as x
+from Librairies import *
 
-import requests_fhir as requests
-import pandas as pd
-
-from sklearn import *
-import matplotlib.pyplot as plt
-from shinywidgets import output_widget, render_widget
-import plotly.express as px
-from asyncio import sleep
-import numpy as np
-import plotly.graph_objs as go
-from shiny import App, reactive, ui, Session, render, Inputs, Outputs
-from sklearn.linear_model import LinearRegression
-import base64
-import random
-import shinyswatch
-from htmltools import css
-import seaborn as sns
-from flask import send_file
-import plotly.express as px
-import streamlit as st
-import tempfile
-import os
-import joblib
-from shiny.types import NavSetArg
-from typing import List 
-BASE_URL = 'https://test/fhir'
 
 #Opening the Treatment CSV file
 infile = Path(__file__).parent / "data/treat_data.csv"
@@ -68,7 +41,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         6,
                         x.ui.card(
                             x.ui.card_header("Linear Regression "),
-                            ui.output_plot("Data_test"),
+                            ui.output_plot("Linear_Regression"),
                         ),
                         x.ui.card(
                             x.ui.card_header("Linear Regression Waterfall chart"),
@@ -210,21 +183,10 @@ def server(input: Inputs, output: Outputs, session: Session):
     def _():
         print("Current navbar page: ", input.navbar_id())
 
-
-
-#Loading the treat CSV file
-    @output
-    @render.table
-    def Treattable():
-        infile = Path(__file__).parent / "data/treat_data.csv"
-        treat = pd.read_csv(infile)
-        return treat
-    
-#Trying to display the Linear Regression Graphs and Waterfall chart on the Dashboard by creating
-#PNG images and using them to display them on the dashboard
+#Shiny for Python function to display the Linear Regression 
     @output
     @render.plot
-    def Data_test():
+    def Linear_Regression():
         x, y = data_separation(treat)
         x = pd.DataFrame(x)
         x = x.fillna(0)
@@ -241,17 +203,15 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.plot
     def WaterfallPNG():
         x, y = data_separation(treat)
-
         x = pd.DataFrame(x)
         x = x.fillna(0)
         x = x.dropna()
         X_train, X_test, Y_train, Y_test = data_split(x,y)
- 
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
         Water = create_shap_waterfall_chart(lr, x, X_test, sample_index=14, max_display=14)
-        
         return Water
 
+#Function for Random Forest chart
     @output
     @render.plot
     def Random_Forest_plot():
@@ -263,7 +223,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         rf, y_rf_train_pred, y_rf_test_pred = RF(X_train,Y_train, X_test, max_depth=2, random_state=100)
         RF_plot = plot_RF_results(Y_train, y_rf_train_pred)
         return RF_plot
-    
+
+#Function to display the WaterFall chart of the Random Forest 
     @output
     @render.plot
     def WaterRF():
@@ -321,15 +282,6 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         return violin
 
-#Shiny for Python function to display Patient info on the Joblib prediction tab
-    """@output
-    @render.text
-    @reactive.event(input.send3, ignore_none=False)
-    def patient_Row():
-        patient_id = input.patient_row
-        pred = Joblib(patient_id())
-        return f"Prediction for the Patient {pred}"""
-    
 
 #Tab Joblib Prediction, Text to display Prediction made with Model and dataset
     @output
@@ -339,7 +291,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         selected_row = input.patient_row
         prediction = Joblib(selected_row())
         return prediction
-    
+
+#Function for the Tab Prediction, displays a histogram plot
     @output
     @render.plot
     @reactive.event(input.send3, ignore_none=False)
@@ -391,11 +344,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.event(input.send, ignore_none=False)
     def patient_table():
         patient_ids = input.patient_id
-        response = requests.get('{}/{}/{}'.format(BASE_URL, 'Patient', patient_ids()))
-
-        patient_df = pd.json_normalize(response.json())[['id', 'gender', 'birthDate']]
-        patient_df = patient_df.astype({'birthDate': 'datetime64[ns]'})
-        return patient_df
+        response = patient_data(patient_ids())
+        return response
     
 
 #Shiny for Python function to display Patient history   

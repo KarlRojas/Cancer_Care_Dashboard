@@ -1,30 +1,5 @@
-import numpy as np
-import json
-import requests_fhir as requests
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.datasets import make_classification
-from sklearn.linear_model import LinearRegression
-from sklearn.impute import SimpleImputer
-import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.ensemble import RandomForestRegressor
-import shap
-import sklearn
-import tempfile
-import seaborn as sns
-import base64 
-import io
-import os
-import joblib
-import pandas as pd
-from sklearn.feature_selection import SelectKBest, f_classif  # Use the appropriate scoring function
-from requests.exceptions import RequestException
-BASE_URL = 'https://test/fhir'
+from Librairies import *
+
 
 
 #Function to load Patient Data
@@ -36,8 +11,6 @@ def patient_data(patient_id):
             patient_df = pd.json_normalize(response.json())[['id', 'gender', 'birthDate']]
             # Convert birthDate column to datetime
             patient_df = patient_df.astype({'birthDate': 'datetime64[ns]'})
-            print(patient_df.info())
-            return patient_df
         else:
             print("Failed to fetch patient data. Status code:", response.status_code)
             return None
@@ -210,28 +183,6 @@ def Split_and_Shap(model, x, X_test, sample_index, max_display=14):
     # Return positive and negative feature names as two separate lists
     return positive_feature_names, negative_feature_names
 
-    
-#Function to display and create a Linear Regression graph and save it as an image
-def create_and_display_graph_test(Y_train, y_lr_train_pred, image_path):
-    z = np.polyfit(Y_train, y_lr_train_pred, 1)
-    p = np.poly1d(z)
-    scatter = sns.scatterplot(x=Y_train, y=y_lr_train_pred, alpha=0.3)
-    plt.plot(Y_train, p(Y_train), color='red', linewidth=2)
-    plt.xlabel('Actual CVS Score')
-    plt.ylabel('Predicted CVS Score')
-    plt.title('Linear Regression: Actual vs. Predicted CVS Score')
-    # Create a temporary directory
-    #temp_dir = tempfile.mkdtemp()
-    # Define the path for the saved image
-    #image_path = f"{temp_dir}/sample_plot.png"
-    # Save the plot as an image
-    plt.savefig(image_path, bbox_inches="tight")
-    # Display the plot
-    plt.show()
-    # Close the plot to release resources
-    plt.close()
-
-
 
 #Function for the Joblib Method and to realize predictions for each patients
 def Joblib(selected_row):
@@ -284,8 +235,6 @@ def pred_plot(selected_row):
 
     # Extract features starting from 'days_from_diag' and select the next 304 columns
     selected_features = patient_data[days_from_diag_idx + 1:days_from_diag_idx + num_features_to_select + 1]
-
-
 
     # Create a bar plot to visualize the 'days_from_diag' values
     plt.figure(figsize=(8, 6))
