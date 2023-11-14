@@ -4,6 +4,7 @@ import shiny as x
 from Librairies import *
 
 
+
 #Opening the Treatment CSV file
 infile = Path(__file__).parent / "data/treat_data.csv"
 treat = pd.read_csv(infile)
@@ -42,10 +43,12 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         x.ui.card(
                             x.ui.card_header("Linear Regression "),
                             ui.output_plot("Linear_Regression"),
+                            full_screen =True,
                         ),
                         x.ui.card(
                             x.ui.card_header("Linear Regression Waterfall chart"),
                             ui.output_plot("WaterfallPNG"),
+                            full_screen =True,
                         ),
                     ),
                     ui.column(
@@ -53,11 +56,13 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         x.ui.card(
                             x.ui.card_header("Random Forest"),
                             ui.output_plot("Random_Forest_plot"),
+                            full_screen =True,
                         ),
 
                         x.ui.card(
                             x.ui.card_header("Waterfall Random Forest"),
-                            ui.output_plot("WaterRF")
+                            ui.output_plot("WaterRF"),
+                            full_screen =True,
                         ),
                     ),
                 ),
@@ -127,23 +132,36 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                 ),
             ),
             
-            ui.nav(
-                "Joblib Prediction", prefix + ": Joblib Prediction",
-                x.ui.card(
-                    x.ui.card_header("Patient ROW"),
-                    ui.input_numeric("patient_row", "Enter the Patient ROW", 1, min=1, max=len(data)),
-                    ui.p(ui.input_action_button("send3", "Enter", class_="btn-primary")),
-                    ui.output_text("patient_Row"),
-                ),
-                x.ui.card(
-                    x.ui.card_header("Predictions results"),
-                    ui.output_text("Pred"),
-                ),
-                x.ui.card(
-                    x.ui.card_header("Predictions Plot"),
-                    ui.output_plot("Pred_plot"),
-
-                )
+            ui.nav("Joblib Prediction", prefix + ": Joblib Prediction",
+                   ui.row(
+                       ui.column(6,
+                                 x.ui.card(
+                                     x.ui.card_header("Patient row"),
+                                     ui.input_numeric("patient_row", "Enter the Patient row", 1, min=1, max=len(data)),
+                                     ui.p(ui.input_action_button("send3", "Enter", class_="btn-primary")),
+                                     ui.output_text("patient_Row"),
+                                     fill = True, 
+                                 ),
+                        ui.column(6,
+                                  x.ui.card(
+                                      x.ui.card_header("Predictions results"),
+                                      ui.output_text("Pred"),
+                                  ),
+                        ),
+                        ),
+                        ),
+                        x.ui.card(
+                            x.ui.card_header("Predictions Plot"),
+                            ui.output_plot("Pred_plot"),
+                            full_screen =True,
+                        ),
+                        x.ui.card(
+                            x.ui.card_header("Waterfall Chart"),
+                            ui.output_plot("Waterfallpred"),
+                            full_screen =True,
+                        ),
+                                 
+                   
             ),
            
             ui.nav(
@@ -195,7 +213,6 @@ def server(input: Inputs, output: Outputs, session: Session):
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
         linear_regression_plot = plot_linear_regression_results(Y_train, y_lr_train_pred)
         return linear_regression_plot
-    
     
 
 #Function for WaterFall chart for Linear Regression
@@ -301,7 +318,18 @@ def server(input: Inputs, output: Outputs, session: Session):
         plot = pred_plot(selected_row())
         return plot
 
-
+    @output
+    @render.plot
+    def Waterfallpred():
+        x, y = separation_pred(data)
+        x = pd.DataFrame(x)
+        x = x.fillna(0)
+        x = x.dropna()
+        X_train, X_test, Y_train, Y_test = data_split(x,y)
+        lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
+        Water = create_shap_waterfall_chart(lr, x, X_test, sample_index=14, max_display=10)
+        return Water
+    
 
 #Shiny for Python for the What if navigation bar and what is inside
     @output
@@ -321,8 +349,6 @@ def server(input: Inputs, output: Outputs, session: Session):
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
         plot = plot_linear_regression_results(Y_train, y_lr_train_pred)
         return plot
-
-
 
 #Shiny for Python function for the What if tab
     @output
@@ -362,5 +388,6 @@ def server(input: Inputs, output: Outputs, session: Session):
     
 
 
+    
 
 app = App(app_ui, server)

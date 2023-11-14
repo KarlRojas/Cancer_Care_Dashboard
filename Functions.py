@@ -1,7 +1,5 @@
 from Librairies import *
 
-
-
 #Function to load Patient Data
 def patient_data(patient_id):
     try:
@@ -44,6 +42,12 @@ def treatment_file(file_path):
 def data_separation(treat_df):
     y = treat_df['cvscore']
     x = treat_df.drop(['cvscore','treat_start_date'], axis = 1)
+    return x, y
+
+#Function for the X and Y variables
+def separation_pred(data):
+    y = data['days_from_diag']
+    x = data.drop(['days_from_diag'], axis = 1)
     return x, y
 
 #Function for Data splitting 
