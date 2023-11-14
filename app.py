@@ -16,6 +16,7 @@ data = pd.read_csv('simulated_data.csv')
 #Opening the Snomed CSV file
 infiles = Path(__file__).parent / "data/snomed.csv"
 snomed = pd.read_csv(infiles)
+labels = snomed['label'].unique()
 
 #new navigation bar 
 def nav_controls(prefix: str) -> List[NavSetArg]:
@@ -27,13 +28,26 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                    ui.input_numeric("patient_id", "Enter the Patient ID", 2, min=1, max=1000000000),
                    ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
                    ui.output_table("patient_table"),
+                   fill = True,
+
                ),
                x.ui.card(
                     x.ui.card_header("Patient History"),
-                    ui.input_text("snowmed", "Snowmed code", value='chol'),
-                    ui.input_numeric("patient2", "Enter the Patient ID", 2, min=1, max=1000000000),
+                    ui.input_selectize(
+                        "selected_label",
+                        "Choose a label", 
+                        {label: label for label in labels},
+                        multiple=False
+                    ),
                     ui.p(ui.input_action_button("send2", "Enter", class_="btn-primary")),
-                    ui.output_table("history"),
+                    fill = True,
+               ),
+               x.ui.card(
+                   x.ui.card_header("Patient plot"),
+                   ui.output_plot("history"),
+                   fill = True,
+                   full_screen =True,
+
                ),
         ),
         ui.nav("Linear Regression & Random Forest", prefix + ": Linear Regression & Random Forest",
@@ -376,13 +390,12 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 #Shiny for Python function to display Patient history   
     @output
-    @render.table
+    @render.plot
     @reactive.event(input.send2, ignore_none=False)
     def history() :
         patient_id=input.patient_id
-        patient2 =input.patient2
-        code = input.snowmed
-        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), patient2(), code()))
+        code = input.selected_label
+        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), code()))
         history_df = pd.json_normalize(response.json())
         return history_df
     
