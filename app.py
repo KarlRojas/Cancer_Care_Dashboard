@@ -86,6 +86,9 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                 x.ui.card(
                     x.ui.card_header("Positive and negative SHAP features"),
                     ui.output_text("positive_negative"),
+                    fill = True, 
+                ),
+                x.ui.card(
                     x.ui.card_header("BeeSwarm"),
                     ui.output_plot("plot_bee"),
                     full_screen=True, 
@@ -165,7 +168,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                      ui.input_numeric("patient_row", "Enter the Patient row", 1, min=1, max=len(data)),
                                      ui.p(ui.input_action_button("send3", "Enter", class_="btn-primary")),
                                      ui.output_text("patient_Row"),
-                                     fill = True, 
+                                     height ="200px",
                                  ),
                        ),
                         ui.column(6,
@@ -174,26 +177,30 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                       ui.output_text("Pred"),
                                   ),
                         ),
+
+                        ui.column(6, 
+                                  x.ui.card(
+                                      x.ui.card_header("Predictions Plot"),
+                                      ui.output_plot("Pred_plot"),
+                                      full_screen =True,
+                        ),
+                                  ),
+                        ui.column(6,
+                                  x.ui.card(
+                                      x.ui.card_header("Waterfall Chart"),
+                                      ui.output_plot("Waterfallpred"),
+                                      full_screen =True,
+                                     fill = True, 
+                        ),
+                                  ),
                         ),
                         
-                        x.ui.card(
-                            x.ui.card_header("Predictions Plot"),
-                            ui.output_plot("Pred_plot"),
-                            full_screen =True,
-                        ),
                         
-                                 
-                   
             ),
            
             ui.nav(
                 "Treatment Plans",  prefix + ": Treatment Plans",
-                x.ui.card(
-                            x.ui.card_header("Waterfall Chart"),
-                            ui.output_plot("Waterfallpred"),
-                            full_screen =True,
-                            fill = True, 
-                        ),
+                
             ),
             ui.nav(
                 "Feedback and Support", prefix + ": Feedback and Support",
