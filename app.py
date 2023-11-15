@@ -4,7 +4,7 @@ import shiny as x
 from Librairies import *
 
 
-
+style="border: 1px solid #999;"
 #Opening the Treatment CSV file
 infile = Path(__file__).parent / "data/treat_data.csv"
 treat = pd.read_csv(infile)
@@ -12,7 +12,7 @@ treat = pd.read_csv(infile)
 #Loading the pre-trained model and Opening the Simulated Data
 model = joblib.load('model.joblib')
 data = pd.read_csv('simulated_data.csv')
-
+datas = pd.read_csv('simulated_data.csv')
 #Opening the Snomed CSV file
 infiles = Path(__file__).parent / "data/snomed.csv"
 snomed = pd.read_csv(infiles)
@@ -37,7 +37,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         "selected_label",
                         "Choose a label", 
                         {label: label for label in labels},
-                        multiple=False
+                        multiple=True, 
                     ),
                     ui.p(ui.input_action_button("send2", "Enter", class_="btn-primary")),
                     fill = True,
@@ -88,10 +88,13 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                     ui.output_text("positive_negative"),
                     x.ui.card_header("BeeSwarm"),
                     ui.output_plot("plot_bee"),
+                    full_screen=True, 
+                    fill = True, 
                 ),
                 x.ui.card(
                     x.ui.card_header("Violin Chart"),
-                    ui.output_plot("plot_violin")
+                    ui.output_plot("plot_violin"),
+                    full_screen=True, 
                 ),
             ),
 
@@ -135,14 +138,22 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         selected=False,
                     ),
                     ui.output_text("New_Prediction"),
+                    full_screen=True, 
                 ),
                 x.ui.card(
                     x.ui.card_header("Current plot"),
                     ui.output_plot("Current"),
+                    full_screen=True, 
                 ),
                 x.ui.card(
                     x.ui.card_header("What if plot"),
                     ui.output_plot("new_LR_plt"),
+                    full_screen=True, 
+                ),
+                x.ui.card(
+                    x.ui.card_header("Waterfall Chart"),
+                    ui.output_plot("Ifwater"),
+                    full_screen = True, 
                 ),
             ),
             
@@ -156,6 +167,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                      ui.output_text("patient_Row"),
                                      fill = True, 
                                  ),
+                       ),
                         ui.column(6,
                                   x.ui.card(
                                       x.ui.card_header("Predictions results"),
@@ -163,37 +175,25 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                   ),
                         ),
                         ),
-                        ),
+                        
                         x.ui.card(
                             x.ui.card_header("Predictions Plot"),
                             ui.output_plot("Pred_plot"),
                             full_screen =True,
                         ),
-                        x.ui.card(
-                            x.ui.card_header("Waterfall Chart"),
-                            ui.output_plot("Waterfallpred"),
-                            full_screen =True,
-                        ),
+                        
                                  
                    
             ),
            
             ui.nav(
                 "Treatment Plans",  prefix + ": Treatment Plans",
-                ui.div(
-                    ui.input_select(
-                        "x", label="Variable",
-                        choices=["total_bill", "tip", "size"]
-                    ),
-                    ui.input_select(
-                        "color", label="Color",
-                        choices=["smoker", "sex", "day", "time"]
-                    ),
-                    class_="d-flex gap-3",
-
-                ),
-                output_widget("my_widget"),
-                
+                x.ui.card(
+                            x.ui.card_header("Waterfall Chart"),
+                            ui.output_plot("Waterfallpred"),
+                            full_screen =True,
+                            fill = True, 
+                        ),
             ),
             ui.nav(
                 "Feedback and Support", prefix + ": Feedback and Support",
@@ -335,13 +335,13 @@ def server(input: Inputs, output: Outputs, session: Session):
     @output
     @render.plot
     def Waterfallpred():
-        x, y = separation_pred(data)
+        x, y = separation_pred(datas)
         x = pd.DataFrame(x)
         x = x.fillna(0)
         x = x.dropna()
-        X_train, X_test, Y_train, Y_test = data_split(x,y)
+        X_train, X_test, Y_train, Y_test = data_split2(x,y)
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
-        Water = create_shap_waterfall_chart(lr, x, X_test, sample_index=14, max_display=10)
+        Water = create_shap_waterfall_chart(lr, x, X_test, sample_index=14, max_display=5)
         return Water
     
 
@@ -394,7 +394,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.event(input.send2, ignore_none=False)
     def history() :
         patient_id=input.patient_id
-        code = input.selected_label
+        code = input.selected_label()
         response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), code()))
         history_df = pd.json_normalize(response.json())
         return history_df

@@ -58,6 +58,20 @@ def data_split(x, y, test_size=0.2, random_state=100):
     X_test = imputer.fit_transform(X_test)
     return X_train, X_test, Y_train, Y_test
 
+#Function for Data splitting 2
+def data_split2(x, y, test_size=0.2, random_state=100):
+    X_train, X_test, Y_train, Y_test = train_test_split(x,y, test_size=test_size, random_state=random_state)
+    imputer = SimpleImputer(strategy='mean')
+    X_train = imputer.fit_transform(X_train)
+    X_test = imputer.fit_transform(X_test)
+    # Scale features
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+    
+    return X_train, X_test, Y_train, Y_test
+
+
 #Function for Linear Regression
 def LR(X_train, X_test, Y_train):
     lr = LinearRegression()
@@ -129,6 +143,7 @@ def create_shap_waterfall_chart(model, x, X_test, sample_index=14, max_display=1
     # Calculate SHAP values
     shap_values = explainer(X_test)
     # Create a SHAP waterfall chart for a specific instance
+    plt.tight_layout()
     shap.plots.waterfall(shap_values[sample_index], max_display=max_display, show=False)
 
 
