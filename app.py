@@ -2,7 +2,7 @@ from shiny import *
 from Functions import *
 import shiny as x
 from Librairies import *
-
+import seaborn as sns
 
 
 #Opening the Treatment CSV file
@@ -47,7 +47,6 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                    ui.output_plot("history"),
                    fill = True,
                    full_screen =True,
-
                ),
         ),
         ui.nav("Linear Regression & Random Forest", prefix + ": Linear Regression & Random Forest",
@@ -388,19 +387,35 @@ def server(input: Inputs, output: Outputs, session: Session):
         return response
     
 
-#Shiny for Python function to display Patient history   
+#Shiny for Python function to display Patient history
+
+
     @output
     @render.plot
     @reactive.event(input.send2, ignore_none=False)
-    def history() :
-        patient_id=input.patient_id
-        code = input.selected_label
-        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id(), code()))
-        history_df = pd.json_normalize(response.json())
-        return history_df
-    
+    def history():
+        patient_id=input.patient_id()
+        code = input.selected_label()
 
+        # Sélection d'une Entrée SNOMED
+        snomed_entry = snomed.loc[snomed['label'] == code].iloc[0]
 
-    
+        # Requête pour Récupérer les Mesures de Patients
+        response = requests.get('{}/{}?patient={}&code={}'.format(BASE_URL, 'Observation', patient_id, snomed_entry['code']))
+
+        # Normalisation des Données de Mesures
+        history_df = pd.json_normalize(response.json(), record_path='entry')[
+            ['resource.subject.reference', 'resource.effectiveDateTime', 'resource.valueQuantity.value']]
+        history_df['resource.valueQuantity.value'] = pd.to_numeric(history_df['resource.valueQuantity.value'], errors='coerce')
+        history_df = history_df.astype(
+            {'resource.effectiveDateTime': 'datetime64[ns]', 'resource.valueQuantity.value': 'float64'})
+
+        # Tracé des Mesures pour Chaque Patient
+        for patient in history_df['resource.subject.reference'].value_counts().index:
+            patient_history_df = history_df.loc[history_df['resource.subject.reference'] == patient]
+            sns.lineplot(x=patient_history_df['resource.effectiveDateTime'],
+                     y=patient_history_df['resource.valueQuantity.value'], label=patient)
+
+        # Personnalisation du Graphique et Affichage
 
 app = App(app_ui, server)
