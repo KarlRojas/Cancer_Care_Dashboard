@@ -399,7 +399,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     @output
     @render.plot
-    @reactive.event(input.send2, ignore_none=False)
+    @reactive.event(input.send, ignore_none=False)
     def history():
         patient_id=input.patient_id()
         code = input.selected_label()
