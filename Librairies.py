@@ -28,4 +28,5 @@ import streamlit as st
 from pathlib import Path
 from typing import List 
 from shiny.types import NavSetArg
+from sklearn.preprocessing import StandardScaler
 BASE_URL = 'https://test/fhir'

@@ -23,31 +23,42 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
     return [
         ui.nav_spacer(),
         ui.nav("Patient Information", prefix + ": Patient Informations",
-               x.ui.card(
-                   x.ui.card_header("Patient Information"),
-                   ui.input_numeric("patient_id", "Enter the Patient ID", 2, min=1, max=1000000000),
-                   ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
-                   ui.output_table("patient_table"),
-                   fill = True,
+               ui.row(
+                   ui.column(
+                       6,
+                       x.ui.card(
+                           x.ui.card_header("Patient Information"),
+                           ui.input_numeric("patient_id", "Enter the Patient ID", 2, min=1, max=1000000000),
+                           ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
+                           ui.output_table("patient_table"),
+                           fill = True,
+                           height = "300px",
+               ),
+                   ),
 
-               ),
-               x.ui.card(
-                    x.ui.card_header("Patient History"),
-                    ui.input_selectize(
-                        "selected_label",
-                        "Choose a label", 
-                        {label: label for label in labels},
-                        multiple=False
+                   ui.column(
+                       6,
+                       x.ui.card(
+                           x.ui.card_header("Patient History"),
+                           ui.input_selectize(
+                           "selected_label",
+                           "Choose a label", 
+                           {label: label for label in labels},
+                           multiple=False
                     ),
-                    ui.p(ui.input_action_button("send2", "Enter", class_="btn-primary")),
                     fill = True,
+                    height = "300px",
                ),
+                   ),
                x.ui.card(
                    x.ui.card_header("Patient plot"),
                    ui.output_plot("history"),
                    fill = True,
                    full_screen =True,
                ),
+                             
+               ),
+               
         ),
         ui.nav("Linear Regression & Random Forest", prefix + ": Linear Regression & Random Forest",
                ui.row(
@@ -85,12 +96,28 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                 x.ui.card(
                     x.ui.card_header("Positive and negative SHAP features"),
                     ui.output_text("positive_negative"),
-                    x.ui.card_header("BeeSwarm"),
-                    ui.output_plot("plot_bee"),
+                    fill=True,
+                    height = "300px",
                 ),
-                x.ui.card(
-                    x.ui.card_header("Violin Chart"),
-                    ui.output_plot("plot_violin")
+                ui.row(
+                    ui.column(
+                        6,
+                        x.ui.card(
+                            x.ui.card_header("Beeswarm Chart :"),
+                            ui.output_plot("plot_bee"),
+                            fill=True, 
+                            full_screen=True, 
+                        ),
+                    ),
+                    ui.column(
+                        6,
+                        x.ui.card(
+                            x.ui.card_header("Violin Chart :"),
+                            ui.output_plot("plot_violin"),
+                            fill=True, 
+                            full_screen=True, 
+                        ),
+                    ),
                 ),
             ),
 
@@ -145,7 +172,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                 ),
             ),
             
-            ui.nav("Joblib Prediction", prefix + ": Joblib Prediction",
+             ui.nav("Joblib Prediction", prefix + ": Joblib Prediction",
                    ui.row(
                        ui.column(6,
                                  x.ui.card(
@@ -153,46 +180,38 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                      ui.input_numeric("patient_row", "Enter the Patient row", 1, min=1, max=len(data)),
                                      ui.p(ui.input_action_button("send3", "Enter", class_="btn-primary")),
                                      ui.output_text("patient_Row"),
-                                     fill = True, 
+                                     height ="200px",
                                  ),
+                       ),
                         ui.column(6,
                                   x.ui.card(
                                       x.ui.card_header("Predictions results"),
                                       ui.output_text("Pred"),
                                   ),
                         ),
+
+                        ui.column(6, 
+                                  x.ui.card(
+                                      x.ui.card_header("Predictions Plot"),
+                                      ui.output_plot("Pred_plot"),
+                                      full_screen =True,
                         ),
+                                  ),
+                        ui.column(6,
+                                  x.ui.card(
+                                      x.ui.card_header("Waterfall Chart"),
+                                      ui.output_plot("Waterfallpred"),
+                                      full_screen =True,
+                                     fill = True, 
                         ),
-                        x.ui.card(
-                            x.ui.card_header("Predictions Plot"),
-                            ui.output_plot("Pred_plot"),
-                            full_screen =True,
+                                  ),
                         ),
-                        x.ui.card(
-                            x.ui.card_header("Waterfall Chart"),
-                            ui.output_plot("Waterfallpred"),
-                            full_screen =True,
-                        ),
-                                 
-                   
+                        
+                        
             ),
            
             ui.nav(
                 "Treatment Plans",  prefix + ": Treatment Plans",
-                ui.div(
-                    ui.input_select(
-                        "x", label="Variable",
-                        choices=["total_bill", "tip", "size"]
-                    ),
-                    ui.input_select(
-                        "color", label="Color",
-                        choices=["smoker", "sex", "day", "time"]
-                    ),
-                    class_="d-flex gap-3",
-
-                ),
-                output_widget("my_widget"),
-                
             ),
             ui.nav(
                 "Feedback and Support", prefix + ": Feedback and Support",
@@ -340,7 +359,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         x = x.dropna()
         X_train, X_test, Y_train, Y_test = data_split(x,y)
         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
-        Water = create_shap_waterfall_chart(lr, x, X_test, sample_index=14, max_display=10)
+        Water = create_shap_waterfall_chart(lr, x, X_test, sample_index=14, max_display=5)
         return Water
     
 
@@ -392,7 +411,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     @output
     @render.plot
-    @reactive.event(input.send2, ignore_none=False)
+    @reactive.event(input.send, ignore_none=False)
     def history():
         patient_id=input.patient_id()
         code = input.selected_label()
