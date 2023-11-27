@@ -132,6 +132,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         0,
                         120,
                         65,
+                        post = " y.o",
                     ),
                     ui.input_slider(
                         "blood_pressure",
@@ -139,8 +140,9 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         60,
                         150,
                         100,
-                        step=0.01,
-                        animate = True
+                        step=0.5,
+                        animate = True,
+                        post =" mmHg",
                     ),
                     ui.input_selectize(
                         "gender",
@@ -164,11 +166,13 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                 ),
                 x.ui.card(
                     x.ui.card_header("Current plot"),
-                    ui.output_plot("Current"),
+                    ui.output_plot("Pred_plot"),
+                    full_screen = True, 
                 ),
                 x.ui.card(
                     x.ui.card_header("What if plot"),
                     ui.output_plot("new_LR_plt"),
+                    full_screen=True, 
                 ),
             ),
             
