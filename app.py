@@ -2,7 +2,7 @@ from shiny import *
 from Functions import *
 import shiny as x
 from Librairies import *
-import seaborn as sns
+#import seaborn as sns
 
 
 #Opening the Treatment CSV file
