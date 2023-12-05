@@ -2,7 +2,6 @@ from shiny import *
 from Functions import *
 import shiny as x
 from Librairies import *
-import seaborn as sns
 
 
 #Opening the Treatment CSV file
@@ -22,6 +21,9 @@ labels = snomed['label'].unique()
 def nav_controls(prefix: str) -> List[NavSetArg]:
     return [
         ui.nav_spacer(),
+        
+
+
         ui.nav("Patient Information", prefix + ": Patient Informations",
                ui.row(
                    ui.column(
@@ -132,7 +134,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         0,
                         120,
                         65,
-                        post = " y.o",
+                        post =" y.o",
                     ),
                     ui.input_slider(
                         "blood_pressure",
@@ -140,9 +142,9 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         60,
                         150,
                         100,
-                        step=0.5,
+                        step=0.01,
                         animate = True,
-                        post =" mmHg",
+                        post = " mmHg",
                     ),
                     ui.input_selectize(
                         "gender",
@@ -166,13 +168,11 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                 ),
                 x.ui.card(
                     x.ui.card_header("Current plot"),
-                    ui.output_plot("Pred_plot"),
-                    full_screen = True, 
+                    ui.output_plot("Current"),
                 ),
                 x.ui.card(
                     x.ui.card_header("What if plot"),
                     ui.output_plot("new_LR_plt"),
-                    full_screen=True, 
                 ),
             ),
             
@@ -219,7 +219,55 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
             ),
             ui.nav(
                 "Feedback and Support", prefix + ": Feedback and Support",
-            )
+            ),
+            ui.nav(
+                "Test for main page", prefix + ": Main Page",
+                x.ui.card(
+                    ui.row(
+                        ui.column(
+                            6,
+                            x.ui.card(
+                                x.ui.card_header("Choosing a patient"),
+                                ui.input_numeric("id", "Enter the Patient ID", 2, min=1, max=1000000000),
+                                ui.p(ui.input_action_button("sending", "Enter", class_="btn-primary")),
+                            ),
+                        ),
+                        ui.column(
+                            6,
+                            x.ui.card(
+                                x.ui.card_header("Patient Info"),
+                                ui.output_table("patient_tab"),
+                            ),
+                        ),
+                    ),
+                    ui.row(
+                        ui.column(
+                            6,
+                            x.ui.card(
+                                x.ui.card_header("Linear Regression"),
+                                ui.output_plot("Linear_Regression"),
+                                full_screen =True,
+
+                               
+
+
+                            ),
+                        ),
+                        ui.column(
+                            6,
+                            x.ui.card(
+                                x.ui.card_header("Random Forest"),
+
+                                x.ui.card_header("Prediction"),
+
+                                x.ui.card_header("Positive and Negative SHAP features"),
+
+                            ),
+                        ),
+                    ),
+                ),
+
+            ),
     ]
 
 
@@ -236,6 +284,17 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.Effect
     def _():
         print("Current navbar page: ", input.navbar_id())
+
+    @output
+    @render.text
+    def current_date():
+        current_dates = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return f"Current Date and Time: {current_date}"
+    
+    @output
+    @render.text
+    def Hoem():
+        return "Welcome to Dashboard name, username"
 
 #Shiny for Python function to display the Linear Regression 
     @output
@@ -403,7 +462,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 #Shiny for Python function to display Patient info   
     @output
     @render.table
-    @reactive.event(input.send, ignore_none=False)
+    @reactive.event(input.send2, ignore_none=False)
     def patient_table():
         patient_ids = input.patient_id
         response = patient_data(patient_ids())
@@ -440,5 +499,17 @@ def server(input: Inputs, output: Outputs, session: Session):
                      y=patient_history_df['resource.valueQuantity.value'], label=patient)
 
         # Personnalisation du Graphique et Affichage
+
+
+#Shiny for Python function to display Patient info   
+    @output
+    @render.table
+    @reactive.event(input.button, ignore_none=False)
+    def patient_tab():
+        patient_is = input.id
+        responses = patient_data(patient_is())
+        return responses
+    
+
 
 app = App(app_ui, server)
