@@ -64,8 +64,9 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                    ui.h2("Welcome to the Home Page of the Prediction Dashboard"),
                    ui.h5("Currently logged in as : ... Hospital : ... Number of assigned patients : ..."),
                    ui.p("To get started please select a patient : "),
-                   ui.input_numeric("patient_id", "Enter the Patient ID", 0, min=1, max=1000000000),
-                   ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
+                   ui.input_numeric("patient_ID", "Enter the Patient ID", 0, min=1, max=1000000000),
+                   ui.p(ui.input_action_button("sends", "Enter", class_="btn-primary")),
+                   #ui.output_table("Patient_data"),
                    ui.a("Choosing a patient from the list", href="https://shiny.posit.co/py/"),
                    ),
         
@@ -73,6 +74,8 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                    ui.row(
                        ui.column(4,
                                  x.ui.card(
+                                     #ui.input_numeric("patient_ID", "Enter the Patient ID", 0, min=1, max=1000000000),
+                                     #ui.p(ui.input_action_button("sends", "Enter", class_="btn-primary")),
                                      x.ui.card_header("Patient Information"),
                                      ui.output_table("Patient_data"),
                                  ),
@@ -92,10 +95,10 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                        ui.column(
                            6,
                            x.ui.card(
-                               x.ui.card_header("Logistic Regression Prediction"),
+                               x.ui.card_header("Linear Regression Prediction"),
                                ui.output_plot("Linear_Regression"),
-                               #ui.output_text("positive_negative"),
-                               #ui.output_text("Pred"),
+                               ui.output_text("positive_negative2"),
+                               ui.output_text("Pred"),
                                full_screen =True,
                            ),
                            
@@ -105,9 +108,9 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                            6,
                            x.ui.card(
                                x.ui.card_header("Random Forest Prediction"),
-                               #ui.output_plot("RF_plot"),
                                ui.output_plot("Random_Forest_plot"),
-                               ui.output_text("positive_negative2"),
+                               ui.output_text("positive_negative"),
+                               ui.output_text("Pred2"),
                                full_screen =True,
                            ),
                        ),
@@ -185,7 +188,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         ui.column(6,
                                   x.ui.card(
                                       x.ui.card_header("Predictions results"),
-                                      ui.output_text("Pred"),
+                                      #ui.output_text("Pred"),
                                   ),
                         ),
 
@@ -365,6 +368,15 @@ def server(input: Inputs, output: Outputs, session: Session):
         selected_row = input.patient_row
         prediction = Joblib(selected_row())
         return prediction
+    
+#Tab Joblib Prediction, Text to display Prediction made with Model and dataset
+    @output
+    @render.text
+    @reactive.event(input.send3, ignore_none=False)
+    def Pred2():
+        selected_row = input.patient_row
+        prediction = Joblib(selected_row())
+        return prediction
 
 #Function for the Tab Prediction, displays a histogram plot
     @output
@@ -424,9 +436,9 @@ def server(input: Inputs, output: Outputs, session: Session):
 #Shiny for Python function to display Patient info   
     @output
     @render.table
-    @reactive.event(input.send, ignore_none=False)
-    def patient_table():
-        patient_ids = input.patient_id
+    @reactive.event(input.sends, ignore_none=False)
+    def Patient_data():
+        patient_ids = input.patient_ID
         response = patient_data(patient_ids())
         return response
     

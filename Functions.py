@@ -9,6 +9,7 @@ def patient_data(patient_id):
             patient_df = pd.json_normalize(response.json())[['id', 'gender', 'birthDate']]
             # Convert birthDate column to datetime
             patient_df = patient_df.astype({'birthDate': 'datetime64[ns]'})
+            return patient_df
         else:
             print("Failed to fetch patient data. Status code:", response.status_code)
             return None
