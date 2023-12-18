@@ -22,7 +22,7 @@ labels = snomed['label'].unique()
 def nav_controls(prefix: str) -> List[NavSetArg]:
     return [
         ui.nav_spacer(),
-        ui.nav("Patient Information", prefix + " : Patient Informations",
+        ui.nav("Patient History", prefix + " : Patient Informations",
                ui.row(
                    ui.column(
                        6,
@@ -60,67 +60,66 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                ),
                
         ),
-        ui.nav("Linear Regression & Random Forest", prefix + ": Linear Regression & Random Forest",
-               ui.row(
-                    ui.column(
-                        6,
-                        x.ui.card(
-                            x.ui.card_header("Linear Regression "),
-                            ui.output_plot("Linear_Regression"),
-                            full_screen =True,
-                        ),
-                        x.ui.card(
-                            x.ui.card_header("Linear Regression Waterfall chart"),
-                            ui.output_plot("WaterfallPNG"),
-                            full_screen =True,
-                        ),
-                    ),
-                    ui.column(
-                        6,
-                        x.ui.card(
-                            x.ui.card_header("Random Forest"),
-                            ui.output_plot("Random_Forest_plot"),
-                            full_screen =True,
-                        ),
+        ui.nav("Home Page", prefix + " : Home Page",
+                   ui.h2("Welcome to the Home Page of the Prediction Dashboard"),
+                   ui.h5("Currently logged in as : ... Hospital : ... Number of assigned patients : ..."),
+                   ui.p("To get started please select a patient : "),
+                   ui.input_numeric("patient_id", "Enter the Patient ID", 0, min=1, max=1000000000),
+                   ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
+                   ui.a("Choosing a patient from the list", href="https://shiny.posit.co/py/"),
+                   ),
+        
+            ui.nav("Overview", prefix + " : Patient Overview",
+                   ui.row(
+                       ui.column(4,
+                                 x.ui.card(
+                                     x.ui.card_header("Patient Information"),
+                                     ui.output_table("Patient_data"),
+                                 ),
+                                 ),
+                       ui.column(4,
+                                 x.ui.card(
+                                     x.ui.card_header("Diagnosis"),
+                                 ),
+                                 ),
+                       ui.column(4,
+                                 x.ui.card(
+                                     x.ui.card_header("Calendar"),
+                                     ui.input_date("date", "Date"),
+                                 ),
+                                 ),
+                   ui.row(
+                       ui.column(
+                           6,
+                           x.ui.card(
+                               x.ui.card_header("Logistic Regression Prediction"),
+                               ui.output_plot("Linear_Regression"),
+                               #ui.output_text("positive_negative"),
+                               #ui.output_text("Pred"),
+                               full_screen =True,
+                           ),
+                           
+                       ),
 
-                        x.ui.card(
-                            x.ui.card_header("Waterfall Random Forest"),
-                            ui.output_plot("WaterRF"),
-                            full_screen =True,
-                        ),
+                       ui.column(
+                           6,
+                           x.ui.card(
+                               x.ui.card_header("Random Forest Prediction"),
+                               #ui.output_plot("RF_plot"),
+                               ui.output_plot("Random_Forest_plot"),
+                               ui.output_text("positive_negative2"),
+                               full_screen =True,
+                           ),
+                       ),
+
                     ),
-                ),
-               ),
-        ui.nav(
-                "BeeSwarm & Violin Graphs",prefix + ": BeeSwarm & Violin Graphs",
-                x.ui.card(
-                    x.ui.card_header("Positive and negative SHAP features"),
-                    ui.output_text("positive_negative"),
-                    fill=True,
-                    height = "300px",
-                ),
-                ui.row(
-                    ui.column(
-                        6,
-                        x.ui.card(
-                            x.ui.card_header("Beeswarm Chart :"),
-                            ui.output_plot("plot_bee"),
-                            fill=True, 
-                            full_screen=True, 
-                        ),
-                    ),
-                    ui.column(
-                        6,
-                        x.ui.card(
-                            x.ui.card_header("Violin Chart :"),
-                            ui.output_plot("plot_violin"),
-                            fill=True, 
-                            full_screen=True, 
-                        ),
-                    ),
-                ),
+                    
+                       
+                   ),
+
             ),
-
+                   
+        
         ui.nav(
                 "What if analysis",prefix + ": What if analysis",
                     x.ui.card(
@@ -213,66 +212,13 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
             ui.nav(
                 "Treatment Plans",  prefix + ": Treatment Plans",
             ),
-            ui.nav(
-                "Feedback and Support", prefix + ": Feedback and Support",
-            ),
 
-            ui.nav("Home Page", prefix + " : Home Page",
-                   ui.h2("Welcome to the Home Page of the Prediction Dashboard"),
-                   ui.h5("Currently logged in as : ... Hospital : ... Number of assigned patients : ..."),
-                   ui.p("To get started please select a patient : "),
-                   ui.input_numeric("patient_id", "Enter the Patient ID", 0, min=1, max=1000000000),
-                   ui.p(ui.input_action_button("send", "Enter", class_="btn-primary")),
-                   ui.a("Choosing a patient from the list", href="https://shiny.posit.co/py/"),
-                   ),
+            
+        
+        
 
-            ui.nav("Overview", prefix + " : Patient Overview",
-                   ui.row(
-                       ui.column(4,
-                                 x.ui.card(
-                                     x.ui.card_header("Patient Information"),
-                                     ui.output_table("Patient_data"),
-                                 ),
-                                 ),
-                       ui.column(4,
-                                 x.ui.card(
-                                     x.ui.card_header("Diagnosis"),
-                                 ),
-                                 ),
-                       ui.column(4,
-                                 x.ui.card(
-                                     x.ui.card_header("Calendar"),
-                                     ui.input_date("date", "Date"),
-                                 ),
-                                 ),
-                   ui.row(
-                       ui.column(
-                           6,
-                           x.ui.card(
-                               x.ui.card_header("Logistic Regression Prediction"),
-                               #ui.output_plot("Linear_plot"),
-                               #ui.output_text("Pred"),
-                               full_screen =True,
-                           ),
-                           
-                       ),
+            
 
-                       ui.column(
-                           6,
-                           x.ui.card(
-                               x.ui.card_header("Random Forest Prediction"),
-                               #ui.output_plot("RF_plot"),
-                               #ui.output_text("Pred"),
-                               full_screen =True,
-                           ),
-                       ),
-
-                    ),
-                    
-                       
-                   ),
-
-            ),
 
     ]
 
@@ -362,6 +308,27 @@ def server(input: Inputs, output: Outputs, session: Session):
         # Return the two lists as a tuple
          return f" The positive features are : {positive_feature_names}\n & the negative features are :{negative_feature_names}"
     
+
+
+    
+#Function for nav"Other Types of SHAP charts" to display two lists of the
+#positive and negative features
+    @output
+    @render.text
+    def positive_negative2():
+         x, y = data_separation(treat)
+         x = pd.DataFrame(x)
+         x = x.fillna(0)
+         x = x.dropna()
+         X_train, X_test, Y_train, Y_test = data_split(x,y)
+        # Drop rows containing NaN values
+ 
+         lr, y_lr_train_pred, y_lr_test_pred = LR(X_train, X_test, Y_train)
+         positive_feature_names, negative_feature_names = Split_and_Shap(lr, x, X_test, sample_index=14, max_display=14)
+        # Return the two lists as a tuple
+         return f" The positive features are : {positive_feature_names}\n & the negative features are :{negative_feature_names}"
+    
+
 #Function for nav"Other Types of SHAP charts" to display two other SHAP chart "Beeswarm" and "Violin"
     @output
     @render.plot
