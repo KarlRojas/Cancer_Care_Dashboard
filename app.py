@@ -124,57 +124,107 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                    
         
         ui.nav(
-                "What if analysis",prefix + ": What if analysis",
-                    x.ui.card(
-                    x.ui.card_header("What if"),
-                    ui.p(ui.input_action_button("pred", "Create a new Prediction!", class_="btn-primary")),
-                    ui.input_slider(
-                        "age",
-                        "Age",
-                        0,
-                        120,
-                        65,
+            "What if",prefix + ":What if",
+                ui.row(
+                    ui.column(8,
+                        x.ui.card(
+                            x.ui.card_header("What if"),
+                            #ui.p(ui.input_action_button("pred", "Create a new Prediction", class_="btn-primary")),
+                            ui.input_slider(
+                                "age",
+                                "Age",
+                                0,
+                                120,
+                                65,
+                            ),
+                            ui.input_slider(
+                                "blood_pressure",
+                                "Blood_Pressure",
+                                60,
+                                150,
+                                100,
+                                step=0.01,
+                                animate= True
+                            ),
+                            ui.input_slider(
+                                "blood_pressure",
+                                "Blood_Pressure",
+                                60,
+                                150,
+                                100,
+                                step=0.01,
+                                animate=True
+                            ),
+                            ui.input_slider(
+                                "blood_pressure",
+                                "Blood_Pressure",
+                                60,
+                                150,
+                                100,
+                                step=0.01,
+                                animate=True
+                            ),
+                            ui.input_slider(
+                                "blood_pressure",
+                                "Blood_Pressure",
+                                60,
+                                150,
+                                100,
+                                step=0.01,
+                                animate=True
+                            ),
+
+
+                        ),
                     ),
-                    ui.input_slider(
-                        "blood_pressure",
-                        "Blood_Pressure",
-                        60,
-                        150,
-                        100,
-                        step=0.01,
-                        animate = True
+                    ui.column(4,
+                        x.ui.card(
+                            x.ui.card_header("Other Metrics"),
+                            ui.input_radio_buttons(
+                                "othermetrics",
+                                "Select metric :",
+                                {
+                                    "M1": "Blood",
+                                    "M2": "Blood",
+                                 },
+
+                            ),
+
+                        ),
                     ),
-                    ui.input_selectize(
-                        "gender",
-                        "Choose your gender:",
-                        {
-                            "Gender": {"M": "Male", "F": "Female", "O": "Others"},
-                        },
-                        multiple=False,
-                        selected=False,
-                    ),
-                    ui.input_selectize(
-                        "diabetes",
-                        "Diabetes or not:",
-                        {
-                            "Diabetes": {"Y": "Yes", "N": "No"},
-                        },
-                        multiple=False,
-                        selected=False,
-                    ),
-                    ui.output_text("New_Prediction"),
                 ),
+            ui.row(
                 x.ui.card(
-                    x.ui.card_header("Current plot"),
-                    ui.output_plot("Current"),
-                ),
-                x.ui.card(
-                    x.ui.card_header("What if plot"),
-                    ui.output_plot("new_LR_plt"),
+                    x.ui.card_header("Prediction"),
+                    ui.row(
+                        ui.column(10,
+                            ui.input_radio_buttons(
+                                "model",
+                                "Select model :",
+                                    {
+                                    "R1":"Logistic Regression Model",
+                                    "R2": "Random Forest Model",
+                                 },
+                                inline=True,
+                            ),
+                        ),
+                    ),
                 ),
             ),
+            ui.row(
+                ui.column(6,
+                    ui.output_plot("Prediction"),
+                ),
+                ui.column(6,
+                    ui.output_text("Feedback"),
+                ),
+            ),
+            ui.row(
+
+            ),
+        ),
             
-             ui.nav("Joblib Prediction", prefix + ": Joblib Prediction",
+         ui.nav("Joblib Prediction", prefix + ": Joblib Prediction",
                    ui.row(
                        ui.column(6,
                                  x.ui.card(
@@ -192,7 +242,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                   ),
                         ),
 
-                        ui.column(6, 
+                        ui.column(6,
                                   x.ui.card(
                                       x.ui.card_header("Predictions Plot"),
                                       ui.output_plot("Pred_plot"),
@@ -207,7 +257,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                      fill = True, 
                         ),
                                   ),
-                        ),
+                    ),
                         
                         
             ),
