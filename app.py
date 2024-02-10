@@ -88,7 +88,8 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                        ui.column(4,
                                  x.ui.card(
                                      x.ui.card_header("Calendar"),
-                                     ui.input_date("date", "Date"),
+                                     ui.output_text("Date"),
+
                                  ),
                                  ),
                    ui.row(
@@ -129,6 +130,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                     ui.column(8,
                         x.ui.card(
                             x.ui.card_header("What if"),
+
                             #ui.p(ui.input_action_button("pred", "Create a new Prediction", class_="btn-primary")),
                             ui.input_slider(
                                 "age",
@@ -173,8 +175,6 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                                 step=0.01,
                                 animate=True
                             ),
-
-
                         ),
                     ),
                     ui.column(4,
@@ -209,18 +209,25 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                             ),
                         ),
                     ),
+                    ui.row(
+                        ui.column(6,
+                                  ui.output_plot("Prediction"),
+                                  full_screen=True,
+                                  ),
+                        ui.column(6,
+                                  ui.output_text("Feedback"),
+                                  full_screen=True,
+                                  ),
+                    ),
                 ),
             ),
-            ui.row(
-                ui.column(6,
-                    ui.output_plot("Prediction"),
-                ),
-                ui.column(6,
-                    ui.output_text("Feedback"),
-                ),
-            ),
-            ui.row(
 
+            ui.row(
+                x.ui.card(
+                    ui.card_header("Prediction Average"),
+                    ui.output_plot("PlotAverage"),
+                    full_screen=True,
+                ),
             ),
         ),
             
@@ -262,7 +269,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                         
             ),
            
-            ui.nav(
+        ui.nav(
                 "Treatment Plans",  prefix + ": Treatment Plans",
             ),
 
@@ -278,9 +285,11 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
 
 app_ui = ui.page_navbar(
     *nav_controls("Page"),
-    shinyswatch.theme.darkly(),
-    title="AI Dashboard for Cancer Care",
+    shinyswatch.theme.united(),
+    title="Predicto",
     id="navbar_id",
+
+
 )
 
 #Server part of the Shiny for Python code :
@@ -523,5 +532,17 @@ def server(input: Inputs, output: Outputs, session: Session):
                      y=patient_history_df['resource.valueQuantity.value'], label=patient)
 
         # Personnalisation du Graphique et Affichage
+
+    @output
+    @render.text
+    def date():
+        # Get the current date and time
+        current_datetime = datetime.now()
+
+        # Format the current date as a string with a different format
+        current_date = current_datetime.strftime("%A, %B %d, %Y")
+
+        return current_date
+
 
 app = App(app_ui, server)
