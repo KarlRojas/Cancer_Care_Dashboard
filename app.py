@@ -211,7 +211,7 @@ def nav_controls(prefix: str) -> List[NavSetArg]:
                     ),
                     ui.row(
                         ui.column(6,
-                                  ui.output_plot("Prediction"),
+                                  ui.output_plot("Linear_Regression"),
                                   full_screen=True,
                                   ),
                         ui.column(6,
